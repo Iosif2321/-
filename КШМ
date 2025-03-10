@@ -1,0 +1,81 @@
+// Выполняется один раз при старте миссии, например через init.sqf: [] execVM "mobileSpawn.sqf";
+
+_hemmtClasses = [
+    "OPTRE_M313_UNSC"
+];
+
+{
+    if (typeOf _x in _hemmtClasses) then {
+        _vehicle = _x;
+        
+        _vehicle setVariable ["spawnPointActive", false, true];
+        _vehicle setVariable ["spawnSide", sideUnknown, true];
+
+        _vehicle addAction [
+            "Активировать точку спавна",
+            {
+                params ["_target", "_caller", "_id"];
+                if !(_target getVariable ["spawnPointActive", false]) then {
+                    private _callerSide = side _caller;
+                    _target setVariable ["spawnPointActive", true, true];
+                    _target setVariable ["spawnSide", _callerSide, true];
+                    hint "Точка спавна активирована";
+                    private _marker = createMarker [format["mobileSpawn_%1", str _target], position _target];
+                    _marker setMarkerType "mil_start";
+                    _marker setMarkerColor "ColorGreen";
+                    [_target, _marker] spawn {
+                        params ["_veh", "_mrk"];
+                        while {_veh getVariable ["spawnPointActive", false] && alive _veh} do {
+                            _mrk setMarkerPos (position _veh);
+                            sleep 1;
+                        };
+                        deleteMarker _mrk;
+                    };
+                    [_callerSide, _target] remoteExec ["BIS_fnc_addRespawnPosition", 0, true];
+                } else {
+                    hint "Точка спавна уже активна (отладка)";
+                };
+            },
+            nil,
+            6,
+            true,
+            true,
+            "",
+            "(vehicle _this == _target) && !(_target getVariable ['spawnPointActive', false])"
+        ];
+
+        _vehicle addAction [
+            "Деактивировать точку спавна",
+            {
+                params ["_target", "_caller", "_id"];
+                if (_target getVariable ["spawnPointActive", false]) then {
+                    private _spawnSide = _target getVariable ["spawnSide", sideUnknown];
+                    _target setVariable ["spawnPointActive", false, true];
+                    _target setVariable ["spawnSide", sideUnknown, true];
+                    hint "Точка спавна деактивирована";
+                    [_spawnSide, _target] remoteExec ["BIS_fnc_removeRespawnPosition", 0, true];
+                } else {
+                    hint "Точка спавна уже деактивирована (отладка)";
+                };
+            },
+            nil,
+            6,
+            true,
+            true,
+            "",
+            "(vehicle _this == _target) && (_target getVariable ['spawnPointActive', false])"
+        ];
+
+        _vehicle addEventHandler ["Killed", {
+            params ["_unit"];
+            if (_unit getVariable ["spawnPointActive", false]) then {
+                private _spawnSide = _unit getVariable ["spawnSide", sideUnknown];
+                [_spawnSide, _unit] remoteExec ["BIS_fnc_removeRespawnPosition", 0, true];
+                _unit setVariable ["spawnPointActive", false, true];
+                _unit setVariable ["spawnSide", sideUnknown, true];
+            };
+        }];
+    };
+} forEach vehicles;
+
+hint "Мобильные точки спавна инициализированы для всех Warthog";
