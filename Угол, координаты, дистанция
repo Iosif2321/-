@@ -1,0 +1,77 @@
+[] spawn {
+    while {true} do {
+        private _position = getPosATL player;
+        private _x = round ((_position select 0) * 100) / 100;
+        private _y = round ((_position select 1) * 100) / 100;
+        private _z = round ((_position select 2) * 100) / 100;
+
+        private _aslPosition = getPosASL player;
+        private _terrainHeight = getTerrainHeightASL _position;
+        private _altitude = round (((_aslPosition select 2) - _terrainHeight) * 100) / 100;
+
+        private _direction = round ((getDir player) * 100) / 100;
+
+        private _dirVector = player weaponDirection (currentWeapon player);
+        private _verticalAngle = asin (_dirVector select 2);
+        private _verticalAngleDegrees = _verticalAngle;
+        private _roundedAngle = (round (_verticalAngleDegrees * 2)) / 2;
+
+        private _endPos = screenToWorld [0.5, 0.5];
+        private _distance = round (player distance _endPos);
+
+        hintSilent format [
+            "Координаты: [%1, %2, %3]\nВысота над землей: %4 м\nАзимут направления: %5°\nУгол наклона оружия: %6°\nДистанция до точки: %7 м",
+            _x, _y, _z, _altitude, _direction, _roundedAngle, _distance
+        ];
+
+        sleep 5;
+        hintSilent "";
+
+        sleep 0.1;
+    };
+};
+
+Активация по numb - (5 сек)
+
+[] spawn {
+    waitUntil {!isNull(findDisplay 46)};
+
+    (findDisplay 46) displayAddEventHandler ["KeyDown", {
+        params ["_display", "_keyCode"];
+        
+        if (_keyCode == 0x4A) then {
+            [] spawn {
+                private _endTime = time + 5;
+                while {time < _endTime} do {
+                    private _position = getPosATL player;
+                    private _x = round ((_position select 0) * 100) / 100;
+                    private _y = round ((_position select 1) * 100) / 100;
+                    private _z = round ((_position select 2) * 100) / 100;
+
+                    private _aslPosition = getPosASL player;
+                    private _terrainHeight = getTerrainHeightASL _position;
+                    private _altitude = round (((_aslPosition select 2) - _terrainHeight) * 100) / 100;
+
+                    private _direction = round ((getDir player) * 100) / 100;
+
+                    private _dirVector = player weaponDirection (currentWeapon player);
+                    private _verticalAngle = asin (_dirVector select 2);
+                    private _verticalAngleDegrees = _verticalAngle;
+                    private _roundedAngle = (round (_verticalAngleDegrees * 2)) / 2;
+
+                    private _endPos = screenToWorld [0.5, 0.5];
+                    private _distance = round (player distance _endPos);
+
+                    hintSilent format [
+                        "Координаты: [%1, %2, %3]\nВысота над землей: %4 м\nАзимут направления: %5°\nУгол наклона оружия: %6°\nДистанция до точки: %7 м",
+                        _x, _y, _z, _altitude, _direction, _roundedAngle, _distance
+                    ];
+
+                    sleep 0.1;
+                };
+
+                hintSilent "";
+            };
+        };
+    }];
+};
