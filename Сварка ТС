@@ -1,0 +1,475 @@
+if (!local player) exitWith {};
+
+// Удаляем существующие действия, если они есть
+if (!isNil {player getVariable "actionIDAttach"}) then {
+    player removeAction (player getVariable "actionIDAttach");
+};
+if (!isNil {player getVariable "actionIDDetach"}) then {
+    player removeAction (player getVariable "actionIDDetach");
+};
+
+// Определяем код для привязки
+private _actionAttachCode = {
+    params ["_target", "_caller", "_id"];
+    
+    // Техника 1 — это техника, в которой сидит игрок
+    private _vehicle1Obj = vehicle _caller;
+    if (_vehicle1Obj == _caller || !(_vehicle1Obj isKindOf "OPTRE_M808R_Engineer_UNSC")) exitWith {
+        hintSilent "Вы должны быть в M808R Scorpion (Engineer) для привязки!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Проверяем, не привязана ли уже техника к текущей
+    if (_vehicle1Obj getVariable ["hasAttachment", false]) exitWith {
+        hintSilent "К этой технике уже привязан прицеп!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Определяем область поиска позади техники (10 м ширина, 20 м длина назад)
+    private _pos = getPosASL _vehicle1Obj;
+    private _dir = getDir _vehicle1Obj;
+    private _searchArea = [
+        [_pos select 0, _pos select 1, _pos select 2], // Центр
+        5,  // Полуширина (10 м / 2)
+        10, // Полудлина (20 м / 2, но смещена назад)
+        _dir, // Направление техники
+        true, // Прямоугольник
+        -10 // Смещение центра назад на 10 м
+    ];
+    
+    // Находим ближайший объект позади (машины, танки, вертолёты, самолёты, лодки, тела)
+    private _objectsBehind = nearestObjects [_vehicle1Obj, ["Car", "Tank", "Helicopter", "Plane", "Ship", "Man"], 20];
+    private _vehicle2Obj = objNull;
+    {
+        private _relPos = _vehicle1Obj worldToModel (getPosASL _x);
+        if (_x != _vehicle1Obj && // Исключаем саму технику игрока
+            (_relPos select 0) >= -5 && (_relPos select 0) <= 5 && // Ширина 10 м
+            (_relPos select 1) <= 0 && (_relPos select 1) >= -20 && // Длина 20 м назад
+            !(_x isKindOf "Effects") && // Исключаем эффекты
+            (_x isKindOf "Car" || _x isKindOf "Tank" || _x isKindOf "Helicopter" || _x isKindOf "Plane" || _x isKindOf "Ship" || (_x isKindOf "Man" && !alive _x) || (!alive _x && (_x isKindOf "Car" || _x isKindOf "Tank" || _x isKindOf "Helicopter" || _x isKindOf "Plane" || _x isKindOf "Ship")))) exitWith { // Только подходящие объекты
+            _vehicle2Obj = _x;
+        };
+    } forEach _objectsBehind;
+    
+    if (isNull _vehicle2Obj) exitWith {
+        hintSilent "Объект для привязки не найден позади! (10 м × 20 м)";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Проверяем, не привязан ли объект уже к чему-то
+    if (_vehicle2Obj getVariable ["isAttached", false]) exitWith {
+        hintSilent "Этот объект уже привязан к другой технике!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Получаем габариты первой техники (для смещения по Y)
+    private _bbox1 = boundingBoxReal _vehicle1Obj;
+    private _rearOffset1 = ((_bbox1 select 0) select 1); // Задняя точка первой техники
+    
+    // Получаем габариты второго объекта (для смещения по Y)
+    private _bbox2 = boundingBoxReal _vehicle2Obj;
+    private _length2 = abs((_bbox2 select 0) select 1) + abs((_bbox2 select 1) select 1); // Полная длина второго объекта
+    
+    // Расчет начальной позиции в мировых координатах
+    private _worldPos = _vehicle1Obj modelToWorld [0, _rearOffset1 - 3 - (_length2 / 2), 0];
+    private _terrainHeight = getTerrainHeightASL _worldPos;
+    
+    // Устанавливаем второй объект на поверхность
+    _vehicle2Obj setPosASL [
+        _worldPos select 0,
+        _worldPos select 1,
+        _terrainHeight
+    ];
+    
+    // Выполняем начальную привязку
+    private _relativePos = _vehicle1Obj worldToModel (getPosASL _vehicle2Obj);
+    _vehicle2Obj attachTo [_vehicle1Obj, _relativePos];
+    
+    // Получаем высоту ASL обеих техник после привязки
+    private _heightASL1 = (getPosASL _vehicle1Obj) select 2; // Высота центра техники 1 над уровнем моря
+    private _heightASL2 = (getPosASL _vehicle2Obj) select 2; // Высота центра техники 2 над уровнем моря
+    private _terrainHeight2 = getTerrainHeightASL (getPosASL _vehicle2Obj); // Высота поверхности под техникой 2
+    
+    // Рассчитываем разницу высот и корректируем
+    private _heightDiff = _heightASL2 - _terrainHeight2; // Текущая высота объекта 2 над землёй
+    private _adjustedZ = (_relativePos select 2) - _heightDiff; // Опускаем объект 2 до уровня земли
+    
+    // Привязываем с новой высотой
+    _vehicle2Obj attachTo [_vehicle1Obj, [_relativePos select 0, _relativePos select 1, _adjustedZ]];
+    
+    // Устанавливаем переменные состояния (глобально)
+    _vehicle1Obj setVariable ["hasAttachment", true, true];
+    _vehicle2Obj setVariable ["isAttached", true, true];
+    _vehicle2Obj setVariable ["attachedTo", _vehicle1Obj, true];
+    
+    // Удаляем действие "Привязать технику"
+    private _attachID = _caller getVariable ["actionIDAttach", -1];
+    if (_attachID != -1) then {
+        _caller removeAction _attachID;
+        _caller setVariable ["actionIDAttach", nil];
+    };
+    
+    hintSilent format ["Объект %1 успешно привязан!", typeOf _vehicle2Obj];
+    sleep 1.5;
+    hintSilent "";
+};
+
+// Определяем код для действия отвязки
+private _detachCode = {
+    params ["_target", "_caller", "_id"];
+    
+    // Техника — это транспорт игрока
+    private _vehicle = vehicle _caller;
+    if (_vehicle == _caller || !(_vehicle isKindOf "OPTRE_M808R_Engineer_UNSC")) exitWith {
+        hintSilent "Вы должны быть в M808R Scorpion (Engineer) для отвязки!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Проверяем, есть ли прицеп у техники игрока
+    private _hasAttachment = _vehicle getVariable ["hasAttachment", false];
+    if (!_hasAttachment) exitWith {
+        hintSilent "К этой технике ничего не привязано!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Находим привязанный объект
+    private _attachedObject = objNull;
+    {
+        if (!isNull _x && (_x getVariable ["attachedTo", objNull]) isEqualTo _vehicle) exitWith {
+            _attachedObject = _x;
+        };
+    } forEach (nearestObjects [_vehicle, ["All"], 20]);
+    
+    if (isNull _attachedObject) then {
+        // Если прицеп удалён, сбрасываем состояние
+        _vehicle setVariable ["hasAttachment", false, true];
+        hintSilent "Прицеп был удалён, состояние сброшено!";
+        sleep 1.5;
+        hintSilent "";
+    } else {
+        // Отцепляем объект
+        detach _attachedObject;
+        
+        // Сбрасываем переменные состояния (глобально)
+        _vehicle setVariable ["hasAttachment", false, true];
+        _attachedObject setVariable ["isAttached", false, true];
+        _attachedObject setVariable ["attachedTo", nil, true];
+        
+        // Корректируем позицию на поверхности
+        private _currentPosASL = getPosASL _attachedObject;
+        _attachedObject setPosASL [
+            _currentPosASL select 0,
+            _currentPosASL select 1,
+            getTerrainHeightASL _currentPosASL
+        ];
+        
+        hintSilent "Объект успешно отцеплен!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Возвращаем действие "Привязать технику"
+    if (isNil {_caller getVariable "actionIDAttach"}) then {
+        private _newAttachAction = _caller addAction [
+            "Привязать технику",
+            _caller getVariable "actionAttachCode",
+            [],
+            1.5,
+            true,
+            true,
+            "",
+            "vehicle _this != _this && vehicle _this isKindOf 'OPTRE_M808R_Engineer_UNSC'"
+        ];
+        _caller setVariable ["actionIDAttach", _newAttachAction];
+    };
+};
+
+// Добавляем действие для привязки (только в M808R Scorpion Engineer)
+private _actionAttach = player addAction [
+    "Привязать технику",
+    _actionAttachCode,
+    [],
+    1.5,
+    true,
+    true,
+    "",
+    "vehicle _this != _this && vehicle _this isKindOf 'OPTRE_M808R_Engineer_UNSC'"
+];
+
+// Добавляем действие для отвязки (только в M808R Scorpion Engineer с прицепом)
+private _detachAction = player addAction [
+    "Отвязать технику",
+    _detachCode,
+    [],
+    1.5,
+    true,
+    true,
+    "",
+    "vehicle _this != _this && vehicle _this isKindOf 'OPTRE_M808R_Engineer_UNSC' && (vehicle _this) getVariable ['hasAttachment', false]"
+];
+
+// Сохраняем ID и код действий
+player setVariable ["actionIDAttach", _actionAttach];
+player setVariable ["actionAttachCode", _actionAttachCode];
+player setVariable ["actionIDDetach", _detachAction];
+player setVariable ["detachCode", _detachCode];
+
+
+#############################################################
+#############################################################
+#############################################################
+#############################################################
+#############################################################
+#############################################################
+#############################################################
+
+
+
+
+// ВЕРСИЯ ГЕНР КРИНГЕ
+
+
+
+// ace_service.sqf
+
+if (!hasInterface) exitWith {};
+
+// Удаляем существующие действия, если они есть
+if (!isNil {player getVariable "actionIDAttach"}) then {
+    player removeAction (player getVariable "actionIDAttach");
+};
+if (!isNil {player getVariable "actionIDDetach"}) then {
+    player removeAction (player getVariable "actionIDDetach");
+};
+
+// Определяем код для привязки
+private _actionAttachCode = {
+    params ["_target", "_caller", "_id"];
+    
+    // Техника 1 — это техника, в которой сидит игрок
+    private _vehicle1Obj = vehicle _caller;
+    if (_vehicle1Obj == _caller || !(_vehicle1Obj isKindOf "OPTRE_M808R_Engineer_UNSC")) exitWith {
+        hintSilent "Вы должны быть в M808R Scorpion (Engineer) для привязки!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Проверяем, не привязана ли уже техника к текущей
+    if (_vehicle1Obj getVariable ["hasAttachment", false]) exitWith {
+        hintSilent "К этой технике уже привязан прицеп!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Определяем область поиска позади техники (10 м ширина, 20 м длина назад)
+    private _pos = getPosASL _vehicle1Obj;
+    private _dir = getDir _vehicle1Obj;
+    private _searchArea = [
+        [_pos select 0, _pos select 1, _pos select 2], // Центр
+        5,  // Полуширина (10 м / 2)
+        10, // Полудлина (20 м / 2, но смещена назад)
+        _dir, // Направление техники
+        true, // Прямоугольник
+        -10 // Смещение центра назад на 10 м
+    ];
+    
+    // Находим ближайший объект позади
+    private _objectsBehind = nearestObjects [_vehicle1Obj, ["Car", "Tank", "Helicopter", "Plane", "Ship", "Man", "StaticWeapon"], 20];
+    private _vehicle2Obj = objNull;
+    {
+        private _relPos = _vehicle1Obj worldToModel (getPosASL _x);
+        if (_x != _vehicle1Obj && // Исключаем саму технику игрока
+            (_relPos select 0) >= -5 && (_relPos select 0) <= 5 && // Ширина 10 м
+            (_relPos select 1) <= 0 && (_relPos select 1) >= -20 && // Длина 20 м назад
+            !(_x isKindOf "Effects") && // Исключаем эффекты
+            (_x isKindOf "Car" || _x isKindOf "Tank" || _x isKindOf "Helicopter" || _x isKindOf "Plane" || _x isKindOf "Ship" || _x isKindOf "StaticWeapon" || (_x isKindOf "Man" && !alive _x) || (!alive _x && (_x isKindOf "Car" || _x isKindOf "Tank" || _x isKindOf "Helicopter" || _x isKindOf "Plane" || _x isKindOf "Ship" || _x isKindOf "StaticWeapon")))) exitWith { // Только подходящие объекты
+            _vehicle2Obj = _x;
+        };
+    } forEach _objectsBehind;
+    
+    if (isNull _vehicle2Obj) exitWith {
+        hintSilent "Объект для привязки не найден позади! (10 м × 20 м)";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Проверяем, не привязан ли объект уже к чему-то
+    if (_vehicle2Obj getVariable ["isAttached", false]) exitWith {
+        hintSilent "Этот объект уже привязан к другой технике!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Ограничение на определённые классы техники
+    private _restrictedClasses = ["1stMEU_M313_Elephant", "OPTRE_M313_Lockdown", "OPTRE_M313_Elephant"];
+    if (typeOf _vehicle2Obj in _restrictedClasses) exitWith {
+        hintSilent "ТЫ НЕ УТАЩИШЬ ЭТУ ДУРУ!!!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Получаем габариты первой техники (для смещения по Y)
+    private _bbox1 = boundingBoxReal _vehicle1Obj;
+    private _rearOffset1 = ((_bbox1 select 0) select 1); // Задняя точка первой техники
+    
+    // Получаем габариты второго объекта (для смещения по Y)
+    private _bbox2 = boundingBoxReal _vehicle2Obj;
+    private _length2 = abs((_bbox2 select 0) select 1) + abs((_bbox2 select 1) select 1); // Полная длина второго объекта
+    
+    // Расчет начальной позиции в локальных координатах (без корректировки высоты)
+    private _relativePos = [0, _rearOffset1 - 3 - (_length2 / 2), 0];
+    
+    // Выполняем начальную привязку на сервере
+    [_vehicle2Obj, [_vehicle1Obj, _relativePos]] remoteExec ["attachTo", _vehicle2Obj];
+    
+    // Даём время на синхронизацию
+    sleep 0.1;
+    
+    // Получаем высоту ASL обеих техник после привязки
+    private _heightASL1 = (getPosASL _vehicle1Obj) select 2; // Высота центра техники 1 над уровнем моря
+    private _heightASL2 = (getPosASL _vehicle2Obj) select 2; // Высота центра техники 2 над уровнем моря
+    private _terrainHeight2 = getTerrainHeightASL (getPosASL _vehicle2Obj); // Высота поверхности под техникой 2
+    
+    // Рассчитываем разницу высот между Техникой 2 и поверхностью
+    private _heightDiff = _heightASL2 - _terrainHeight2; // Разница между текущей высотой Техники 2 и землёй
+    private _adjustedZ = (_relativePos select 2) - _heightDiff; // Опускаем Технику 2 до уровня земли
+    
+    // Повторная привязка с учётом разницы высот
+    [_vehicle2Obj, [_vehicle1Obj, [_relativePos select 0, _relativePos select 1, _adjustedZ]]] remoteExec ["attachTo", _vehicle2Obj];
+    
+    // Устанавливаем переменные состояния (глобально)
+    _vehicle1Obj setVariable ["hasAttachment", true, true];
+    _vehicle2Obj setVariable ["isAttached", true, true];
+    _vehicle2Obj setVariable ["attachedTo", _vehicle1Obj, true];
+    
+    // Если это тело, запускаем цикл обновления позиции
+    if (_vehicle2Obj isKindOf "Man" && !alive _vehicle2Obj) then {
+        [_vehicle2Obj, _vehicle1Obj, [_relativePos select 0, _relativePos select 1, _adjustedZ]] spawn {
+            params ["_body", "_vehicle", "_relativePos"];
+            while {_body getVariable ["isAttached", false] && !isNull _body && !isNull _vehicle} do {
+                private _newPos = _vehicle modelToWorld _relativePos;
+                _newPos set [2, (getTerrainHeightASL _newPos)]; // Устанавливаем на уровне земли
+                [_body, _newPos] remoteExec ["setPosASL", _body];
+                sleep 0.05; // Обновление каждые 0.05 секунды
+            };
+        };
+    };
+    
+    // Удаляем действие "Привязать технику"
+    private _attachID = _caller getVariable ["actionIDAttach", -1];
+    if (_attachID != -1) then {
+        _caller removeAction _attachID;
+        _caller setVariable ["actionIDAttach", nil];
+    };
+    
+    hintSilent format ["Объект %1 успешно привязан!", typeOf _vehicle2Obj];
+    sleep 1.5;
+    hintSilent "";
+};
+
+// Определяем код для действия отвязки
+private _detachCode = {
+    params ["_target", "_caller", "_id"];
+    
+    // Техника — это транспорт игрока
+    private _vehicle = vehicle _caller;
+    if (_vehicle == _caller || !(_vehicle isKindOf "OPTRE_M808R_Engineer_UNSC")) exitWith {
+        hintSilent "Вы должны быть в M808R Scorpion (Engineer) для отвязки!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Проверяем, есть ли прицеп у техники игрока
+    private _hasAttachment = _vehicle getVariable ["hasAttachment", false];
+    if (!_hasAttachment) exitWith {
+        hintSilent "К этой технике ничего не привязано!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Находим привязанный объект с увеличенной зоной поиска (50 м)
+    private _attachedObject = objNull;
+    {
+        if (!isNull _x && (_x getVariable ["attachedTo", objNull]) isEqualTo _vehicle) exitWith {
+            _attachedObject = _x;
+        };
+    } forEach (nearestObjects [_vehicle, ["All"], 50]); // Увеличен радиус до 50 м
+    
+    if (isNull _attachedObject) then {
+        // Если прицеп удалён, сбрасываем состояние
+        _vehicle setVariable ["hasAttachment", false, true];
+        hintSilent "Прицеп был удалён, состояние сброшено!";
+        sleep 1.5;
+        hintSilent "";
+    } else {
+        // Отцепляем объект на сервере
+        [_attachedObject] remoteExec ["detach", _attachedObject];
+        
+        // Сбрасываем переменные состояния (глобально)
+        _vehicle setVariable ["hasAttachment", false, true];
+        _attachedObject setVariable ["isAttached", false, true];
+        _attachedObject setVariable ["attachedTo", nil, true];
+        
+        // Корректируем позицию на поверхности
+        private _currentPosASL = getPosASL _attachedObject;
+        private _terrainHeight = getTerrainHeightASL _currentPosASL;
+        private _bbox2 = boundingBoxReal _attachedObject;
+        private _height2Bottom = abs((_bbox2 select 0) select 2); // Высота от центра до низа
+        [_attachedObject, [_currentPosASL select 0, _currentPosASL select 1, _terrainHeight + _height2Bottom]] remoteExec ["setPosASL", _attachedObject];
+        
+        hintSilent "Объект успешно отцеплен!";
+        sleep 1.5;
+        hintSilent "";
+    };
+    
+    // Возвращаем действие "Привязать технику"
+    if (isNil {_caller getVariable "actionIDAttach"}) then {
+        private _newAttachAction = _caller addAction [
+            "Привязать технику",
+            _caller getVariable "actionAttachCode",
+            [],
+            1.5,
+            true,
+            true,
+            "",
+            "vehicle _this != _this && vehicle _this isKindOf 'OPTRE_M808R_Engineer_UNSC'"
+        ];
+        _caller setVariable ["actionIDAttach", _newAttachAction];
+    };
+};
+
+// Добавляем действие для привязки (только в M808R Scorpion Engineer)
+private _actionAttach = player addAction [
+    "Привязать технику",
+    _actionAttachCode,
+    [],
+    1.5,
+    true,
+    true,
+    "",
+    "vehicle _this != _this && vehicle _this isKindOf 'OPTRE_M808R_Engineer_UNSC'"
+];
+
+// Добавляем действие для отвязки (только в M808R Scorpion Engineer с прицепом)
+private _detachAction = player addAction [
+    "Отвязать технику",
+    _detachCode,
+    [],
+    1.5,
+    true,
+    true,
+    "",
+    "vehicle _this != _this && vehicle _this isKindOf 'OPTRE_M808R_Engineer_UNSC' && (vehicle _this) getVariable ['hasAttachment', false]"
+];
+
+// Сохраняем ID и код действий
+player setVariable ["actionIDAttach", _actionAttach];
+player setVariable ["actionAttachCode", _actionAttachCode];
+player setVariable ["actionIDDetach", _detachAction];
+player setVariable ["detachCode", _detachCode];
