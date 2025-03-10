@@ -1,0 +1,82 @@
+_this setVariable [SPEEDI_GONHIK, false];
+
+[] spawn {
+    waitUntil {!isNull(findDisplay 46)};
+    
+    (findDisplay 46) displayAddEventHandler [KeyDown, {
+        if (_this select 1 isEqualTo 0x05) then {  
+            _unit = player;
+            _veh = vehicle _unit;
+            if (!(_veh getVariable SPEEDI_GONHIK)) then {
+                _veh setVariable [SPEEDI_GONHIK, true];
+                while { _veh getVariable SPEEDI_GONHIK } do {
+                    sleep 0.1;
+                    if ((speed _veh)  300) exitWith {_veh setVariable [SPEEDI_GONHIK, false];};
+                    _vel = velocity _veh;
+                    _dir = direction _veh;
+                    _speed = 2;
+                    _veh setVelocity [(_vel select 0) + (sin _dir  _speed), (_vel select 1) + (cos _dir  _speed), (_vel select 2)];
+                };
+            };
+        };
+        if (_this select 1 isEqualTo 0x04) then {  
+            _unit = player;
+            _veh = vehicle _unit;
+            if (!(_veh getVariable SPEEDI_GONHIK)) then {
+                _veh setVariable [SPEEDI_GONHIK, true];
+                while { _veh getVariable SPEEDI_GONHIK } do {
+                    sleep 0.1;
+                    if ((speed _veh)  250) exitWith {_veh setVariable [SPEEDI_GONHIK, false];};
+                    _vel = velocity _veh;
+                    _dir = direction _veh;
+                    _speed = 2;
+                    _veh setVelocity [(_vel select 0) + (sin _dir  _speed), (_vel select 1) + (cos _dir  _speed), (_vel select 2)];
+                };
+            };
+        };
+         if (_this select 1 isEqualTo 0x03) then {  
+            _unit = player;
+            _veh = vehicle _unit;
+            if (!(_veh getVariable SPEEDI_GONHIK)) then {
+                _veh setVariable [SPEEDI_GONHIK, true];
+                while { _veh getVariable SPEEDI_GONHIK } do {
+                    sleep 0.1;
+                    if ((speed _veh)  200) exitWith {_veh setVariable [SPEEDI_GONHIK, false];};
+                    _vel = velocity _veh;
+                    _dir = direction _veh;
+                    _speed = 2;
+                    _veh setVelocity [(_vel select 0) + (sin _dir  _speed), (_vel select 1) + (cos _dir  _speed), (_vel select 2)];
+                };
+            };
+        };
+         if (_this select 1 isEqualTo 0x02) then {  
+            _unit = player;
+            _veh = vehicle _unit;
+            if (!(_veh getVariable SPEEDI_GONHIK)) then {
+                _veh setVariable [SPEEDI_GONHIK, true];
+                while { _veh getVariable SPEEDI_GONHIK } do {
+                    sleep 0.1;
+                    if ((speed _veh)  150) exitWith {_veh setVariable [SPEEDI_GONHIK, false];};
+                    _vel = velocity _veh;
+                    _dir = direction _veh;
+                    _speed = 2;
+                    _veh setVelocity [(_vel select 0) + (sin _dir  _speed), (_vel select 1) + (cos _dir  _speed), (_vel select 2)];
+                };
+            };
+        };
+        		
+        if (_this select 1 isEqualTo 0x37) then {  
+            _unit = player;
+            _veh = vehicle _unit;
+            _veh setVariable [SPEEDI_GONHIK, false];
+            if (speed _veh  50) then {
+                for _i to 1.2 do {
+                    _vel = velocity _veh; 
+                    _dir = direction _veh + 180; 
+                    _speed = 1.2; 
+                    _veh setVelocity [(_vel select 0) + (sin _dir  _speed), (_vel select 1) + (cos _dir  _speed), (_vel select 2)];
+                };
+            };
+        };
+    }];
+};
