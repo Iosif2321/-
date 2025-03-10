@@ -1,0 +1,131 @@
+private _resolution = getResolution;
+private _screenWidth = _resolution select 0; // Ширина в пикселях
+private _screenHeight = _resolution select 1; // Высота в пикселях
+
+// Фиксируем ширину на 90% экрана, увеличиваем высоту до 98% экрана
+private _windowWidth = 0.9; // Фиксированная ширина 90%
+private _windowHeight = 0.98; // Увеличенная высота 98%
+
+// Центрируем окно
+private _xStart = (1 - _windowWidth) / 2;
+private _yStart = (1 - _windowHeight) / 2;
+
+// Создаем дисплей для диалога
+private _display = findDisplay 46 createDisplay "RscDisplayEmpty";
+
+// Создаем заголовок
+private _title = _display ctrlCreate ["RscText", -1];
+_title ctrlSetPosition [_xStart, _yStart, _windowWidth, 0.05];
+_title ctrlSetText "Artillery Computer";
+_title ctrlSetBackgroundColor [0, 0, 0, 0.8];
+_title ctrlSetTextColor [1, 1, 1, 1];
+_title ctrlCommit 0;
+
+// Создаем карту
+private _mapCtrl = _display ctrlCreate ["RscMapControl", 100];
+_mapCtrl ctrlSetPosition [_xStart, _yStart + 0.05, _windowWidth, _windowHeight - 0.15]; // Оставляем место для кнопок
+_mapCtrl ctrlCommit 0;
+
+// Создаем кнопку "Установить цель"
+private _setTargetButton = _display ctrlCreate ["RscButton", 101];
+_setTargetButton ctrlSetPosition [_xStart + 0.1 * _windowWidth, _yStart + _windowHeight - 0.05, 0.25 * _windowWidth, 0.04];
+_setTargetButton ctrlSetText "Set Target";
+_setTargetButton ctrlCommit 0;
+
+// Создаем кнопку "Огонь"
+private _fireButton = _display ctrlCreate ["RscButton", 102];
+_fireButton ctrlSetPosition [_xStart + 0.4 * _windowWidth, _yStart + _windowHeight - 0.05, 0.25 * _windowWidth, 0.04];
+_fireButton ctrlSetText "Fire";
+_fireButton ctrlCommit 0;
+
+// Создаем кнопку "Закрыть"
+private _closeButton = _display ctrlCreate ["RscButton", 103];
+_closeButton ctrlSetPosition [_xStart + 0.7 * _windowWidth, _yStart + _windowHeight - 0.05, 0.25 * _windowWidth, 0.04];
+_closeButton ctrlSetText "Close";
+_closeButton ctrlCommit 0;
+
+// Глобальная переменная для хранения позиции цели
+if (isNil "targetPos") then { targetPos = [0, 0, 0]; };
+
+// Обработчик клика по карте
+_mapCtrl ctrlAddEventHandler ["MouseButtonClick", {
+    params ["_control", "_button", "_x", "_y"];
+
+    if (_button == 0) then { // Только левая кнопка мыши
+        private _ctrlPos = ctrlPosition _control;
+        private _screenX = (_ctrlPos select 0) + (_x * (_ctrlPos select 2));
+        private _screenY = (_ctrlPos select 1) + (_y * (_ctrlPos select 3));
+        private _worldPos = _control ctrlMapScreenToWorld [_screenX, _screenY];
+        targetPos = _worldPos;
+
+        // Создаем или обновляем маркер
+        if (isNil "targetMarker") then {
+            targetMarker = createMarker ["artilleryTarget", _worldPos];
+            "artilleryTarget" setMarkerShape "ICON";
+            "artilleryTarget" setMarkerType "mil_dot";
+            "artilleryTarget" setMarkerColor "ColorRed";
+        } else {
+            "artilleryTarget" setMarkerPos _worldPos;
+        };
+
+        hint format ["Target set at: %1", _worldPos];
+    };
+}];
+
+// Обработчик кнопки "Огонь"
+_fireButton ctrlAddEventHandler ["ButtonClick", {
+    if (targetPos isEqualTo [0, 0, 0]) then {
+        hint "No target selected!";
+    } else {
+        private _bomb = "Sh_125mm_HEAT" createVehicle targetPos;
+        hint "Firing at target!";
+    };
+}];
+
+// Обработчик кнопки "Закрыть"
+_closeButton ctrlAddEventHandler ["ButtonClick", {
+    params ["_control"];
+    private _display = ctrlParent _control;
+    _display closeDisplay 0; // Закрываем дисплей
+}];
+
+// Делаем окно перемещаемым (привязываем к заголовку)
+_title ctrlAddEventHandler ["MouseButtonDown", {
+    params ["_control", "_button"];
+    if (_button == 0) then {
+        _display = ctrlParent _control;
+        _display setVariable ["dragging", true];
+        _display setVariable ["dragOffset", [getMousePosition select 0 - (ctrlPosition _control select 0), getMousePosition select 1 - (ctrlPosition _control select 1)]];
+    };
+}];
+
+_title ctrlAddEventHandler ["MouseButtonUp", {
+    params ["_control", "_button"];
+    if (_button == 0) then {
+        _display = ctrlParent _control;
+        _display setVariable ["dragging", false];
+    };
+}];
+
+_display displayAddEventHandler ["MouseMoving", {
+    params ["_display", "_x", "_y"];
+    if (_display getVariable ["dragging", false]) then {
+        private _offset = _display getVariable ["dragOffset", [0, 0]];
+        private _newX = _x - (_offset select 0);
+        private _newY = _y - (_offset select 1);
+
+        private _title = _display displayCtrl -1;
+        private _mapCtrl = _display displayCtrl 100;
+        private _setTargetButton = _display displayCtrl 101;
+        private _fireButton = _display displayCtrl 102;
+        private _closeButton = _display displayCtrl 103;
+
+        _title ctrlSetPosition [_newX, _newY, 0.9, 0.05];
+        _mapCtrl ctrlSetPosition [_newX, _newY + 0.05, 0.9, 0.98 - 0.15];
+        _setTargetButton ctrlSetPosition [_newX + 0.1 * 0.9, _newY + 0.98 - 0.05, 0.25 * 0.9, 0.04];
+        _fireButton ctrlSetPosition [_newX + 0.4 * 0.9, _newY + 0.98 - 0.05, 0.25 * 0.9, 0.04];
+        _closeButton ctrlSetPosition [_newX + 0.7 * 0.9, _newY + 0.98 - 0.05, 0.25 * 0.9, 0.04];
+
+        {_x ctrlCommit 0} forEach [_title, _mapCtrl, _setTargetButton, _fireButton, _closeButton];
+    };
+}];
