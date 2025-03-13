@@ -1,0 +1,101 @@
+// Выполнить в Расширенной консоли отладки (локально)
+
+// Проверка, загружен ли модуль ACE Fortify
+if (isNil "ace_fortify_fnc_canFortify") exitWith {
+    diag_log "[DEBUG] Ошибка: Модуль ACE Fortify не найден!";
+    systemChat "Ошибка: Модуль ACE Fortify не найден! Добавьте модуль Fortify в миссию.";
+};
+
+// Регистрация рюкзака как инструмента Fortify
+private _fortifyTools = missionNamespace getVariable ["ace_fortify_fortifyTools", []];
+if !("exohalo_3" in _fortifyTools) then {
+    _fortifyTools pushBack "exohalo_3";
+    missionNamespace setVariable ["ace_fortify_fortifyTools", _fortifyTools, true];
+    diag_log "[DEBUG] Рюкзак exohalo_3 добавлен в список инструментов Fortify";
+};
+
+// Функция для добавления действия строительства с рюкзаком
+ACE_Fortify_AddBackpackTool = {
+    params ["_player", "_backpackClass"];
+    
+    diag_log format ["[DEBUG] Начало функции ACE_Fortify_AddBackpackTool для игрока %1 с рюкзаком %2", _player, _backpackClass];
+
+    private _action = [
+        "CustomFortifyAction",
+        "Построить укрепление",
+        "",
+        {
+            params ["_target", "_player", "_params"];
+            diag_log format ["[DEBUG] Попытка открыть меню фортификации для игрока %1", _player];
+            hint "Открываю меню фортификации!";
+            [_player] call ace_fortify_fnc_openFortifyMenu;
+        },
+        {
+            params ["_target", "_player", "_params"];
+            _params params ["_backpackClass"];
+            private _hasBackpack = ((backpack _player) == _backpackClass);
+            private _canFortify = [_player] call ace_fortify_fnc_canFortify;
+            diag_log format ["[DEBUG] Проверка условия действия: Рюкзак = %1, CanFortify = %2", _hasBackpack, _canFortify];
+            _hasBackpack && _canFortify
+        },
+        nil,
+        [_backpackClass]
+    ] call ace_interact_menu_fnc_createAction;
+    diag_log "[DEBUG] Действие создано успешно";
+
+    hint "Добавляю действие...";
+    diag_log "[DEBUG] Начинаю добавление действия в меню";
+    [_player, 1, ["ACE_SelfActions"], _action] call ace_interact_menu_fnc_addActionToObject;
+    diag_log "[DEBUG] Действие добавлено в меню";
+    hint format ["Действие добавлено для %1", _backpackClass];
+    diag_log format ["[DEBUG] Завершено добавление действия для %1", _backpackClass];
+};
+
+// Переопределяем canFortify с полным дебагом
+ACE_Fortify_CanFortifyOverride = {
+    params ["_player", ["_cost", 0]];
+    diag_log format ["[DEBUG] Начало ACE_Fortify_CanFortifyOverride для игрока %1 с cost %2", _player, _cost];
+
+    private _allowed = (missionNamespace getVariable ["ace_fortify_fortifyAllowed", true]);
+    diag_log format ["[DEBUG] Проверка Allowed: %1", _allowed];
+
+    private _hasTool = ((backpack _player) == "exohalo_3") || 
+    {
+        private _items = _player call ace_common_fnc_uniqueItems;
+        _items append weapons _player;
+        _items pushBack (backpack _player);
+        private _toolCheck = (missionNamespace getVariable ["ace_fortify_fortifyTools", []]) findAny _items != -1;
+        diag_log format ["[DEBUG] Проверка HasTool: Рюкзак = %1, Инструменты = %2, Результат = %3", 
+            (backpack _player) == "exohalo_3", _toolCheck, ((backpack _player) == "exohalo_3" || _toolCheck)];
+        ((backpack _player) == "exohalo_3" || _toolCheck)
+    };
+    diag_log format ["[DEBUG] Итог HasTool: %1", _hasTool];
+
+    private _budget = [side group _player] call ace_fortify_fnc_getBudget;
+    private _hasBudget = ((_budget == -1) || {_budget >= _cost});
+    diag_log format ["[DEBUG] Проверка Budget: Значение = %1, HasBudget = %2", _budget, _hasBudget];
+
+    private _inArea = (missionNamespace getVariable ["ace_fortify_locations", []]) isEqualTo [];
+    {
+        if (_player inArea _x) exitWith {_inArea = true};
+    } forEach (missionNamespace getVariable ["ace_fortify_locations", []]);
+    diag_log format ["[DEBUG] Проверка InArea: Зоны = %1, Результат = %2", (missionNamespace getVariable ["ace_fortify_locations", []]), _inArea];
+
+    private _canFortify = _allowed && _hasTool && _hasBudget && _inArea;
+    diag_log format ["[DEBUG] Итог CanFortify: %1 (Allowed: %2, HasTool: %3, HasBudget: %4, InArea: %5)", 
+        _canFortify, _allowed, _hasTool, _hasBudget, _inArea];
+
+    hint format ["CanFortify: %1\nAllowed: %2\nHasTool: %3\nBudget: %4\nInArea: %5", 
+        _canFortify, _allowed, _hasTool, _budget, _inArea];
+    _canFortify
+};
+
+// Применяем изменения
+missionNamespace setVariable ["ace_fortify_fnc_canFortify", ACE_Fortify_CanFortifyOverride, true];
+diag_log "[DEBUG] Переопределение ace_fortify_fnc_canFortify применено";
+
+[player, "exohalo_3"] call ACE_Fortify_AddBackpackTool;
+diag_log "[DEBUG] Вызов функции ACE_Fortify_AddBackpackTool для текущего игрока";
+
+systemChat "Скрипт запущен, проверь меню само-взаимодействия!";
+diag_log "[DEBUG] Скрипт запущен, проверка меню завершена";
