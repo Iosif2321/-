@@ -1,0 +1,4 @@
+//<'Garage.pbo' properties via Mikero's dos tools, dll version 9.98>
+prefix=x\HR_Garage\addons\Garage;
+//PboType=Arma Addon;
+//</properties>
