@@ -1,5 +1,8 @@
-if (isServer) then {
-    private _allowedSteamIDs = [
+if (!isServer) exitWith {};
+
+diag_log "[ZEUS SYSTEM] Скрипт запущен";
+
+allowedSteamIDs = [
         "76561198036844993", // Iceblood
         "76561198213387391", // Yurgen
         "76561198081311236", // Hergot
@@ -9,93 +12,74 @@ if (isServer) then {
         "76561198153560708", // Aveo
         "76561198855517877", // Joker
         "76561198245200164" // DED
-    ];
+];
 
-    fnc_assignZeus = {
-        params ["_player"];
-        if (isNull _player || !isPlayer _player) exitWith { diag_log "[ZEUS DEBUG] Игрок null или не игрок"; };
-        private _uid = getPlayerUID _player;
-        if (_uid == "") exitWith { diag_log "[ZEUS DEBUG] UID не определен"; };
-        if !(_uid in _allowedSteamIDs) exitWith { diag_log format ["[ZEUS DEBUG] Отказано в доступе для %1 (UID: %2)", name _player, _uid]; };
-        if (!isNull (getAssignedCuratorLogic _player)) exitWith { diag_log format ["[ZEUS DEBUG] Зевс уже назначен игроку %1 (UID: %2)", name _player, _uid]; };
-        private _cur = (createGroup [sideLogic, true]) createUnit ["ModuleCurator_F", [0,0,0], [], 0, "NONE"];
-        private _addons = ("true" configClasses (configFile >> "CfgPatches")) apply {configName _x};
-        _cur addCuratorAddons _addons;
-        _player assignCurator _cur;
-        _cur addCuratorEditableObjects [allMissionObjects "", false];
-        ["Вы назначены Зевсом!"] remoteExecCall ["hint", _player];
-        diag_log format ["[ZEUS DEBUG] Зевс назначен игроку %1 (UID: %2)", name _player, _uid];
+fnc_assignZeus = {
+    params ["_player"];
+
+    waitUntil { !isNull _player && {getPlayerUID _player != ""} };
+
+    private _uid = getPlayerUID _player;
+    private _name = name _player;
+
+    if (!(_uid in allowedSteamIDs)) exitWith {
+        diag_log format ["[ZEUS SYSTEM] Игрок %1 (UID %2) не в списке", _name, _uid];
     };
 
-    addMissionEventHandler ["PlayerConnected", {
-        params ["_id", "_uid", "_name", "_jip", "_owner"];
-        private _player = objectFromNetId (getUserInfo _id select 3);
-        if (isNull _player) exitWith { diag_log "[ZEUS DEBUG] Игрок не найден при подключении"; };
-        [_player] spawn fnc_assignZeus;
-    }];
+    private _existing = getAssignedCuratorLogic _player;
+    if (!isNull _existing) then {
+        deleteVehicle _existing;
+        diag_log format ["[ZEUS SYSTEM] Удалён старый Zeus у %1", _name];
+    };
 
-    addMissionEventHandler ["PlayerDisconnected", {
-        params ["_id", "_uid", "_name"];
-        private _player = objectFromNetId (getUserInfo _id select 3);
-        private _curator = getAssignedCuratorLogic _player;
-        if (!isNull _curator) then {
-            deleteVehicle _curator;
-            diag_log format ["[ZEUS DEBUG] Зевс удален для %1 (UID: %2)", _name, _uid];
-        };
-    }];
+    private _zeusLogic = (createGroup sideLogic) createUnit ["ModuleCurator_F", position _player, [], 0, "NONE"];
+    _zeusLogic setVariable ["Owner", _name, true];
 
-    { if (isPlayer _x) then { [_x] spawn fnc_assignZeus; }; } forEach allPlayers;
+    _player assignCurator _zeusLogic;
 
-    [] spawn {
-        waitUntil {time > 0};
-        diag_log "[ZEUS DEBUG] Мониторинг Зевса запущен";
+    private _addons = ("true" configClasses (configFile >> "CfgPatches")) apply { configName _x };
+    _zeusLogic addCuratorAddons _addons;
 
-        while {true} do {
-            private _zeusPlayersList = [];
-            {
-                if (isPlayer _x && !isNull _x) then {
-                    private _curator = getAssignedCuratorLogic _x;
-                    if (!isNull _curator && !isNull (curatorCamera _curator)) then {
-                        _zeusPlayersList pushBack [_x, time];
-                        diag_log format ["[ZEUS DEBUG] %1 активен в Зевсе", name _x];
-                    };
-                };
-            } forEach allPlayers;
+    _zeusLogic addCuratorEditableObjects [allUnits + vehicles + allMissionObjects "", true];
 
-            private _displayList = [];
-            private _zeusHolders = [];
-            {
-                _x params ["_player", "_lastActiveTime"];
-                if (!isNull _player && {isPlayer _player}) then {
-                    private _uid = getPlayerUID _player;
-                    private _name = name _player;
-                    private _entry = format ["%1 (SteamID: %2)", _name, _uid];
-                    if ((time - _lastActiveTime) <= 10) then {
-                        if !(_entry in _displayList) then {
-                            _displayList pushBack _entry;
-                        };
-                    };
-                    if (!isNull (getAssignedCuratorLogic _player)) then {
-                        _zeusHolders pushBack _player;
-                        (getAssignedCuratorLogic _player) addCuratorEditableObjects [allMissionObjects "", false];
-                    };
-                };
-            } forEach _zeusPlayersList;
+    [_player, "Вы назначены Зевсом!"] remoteExecCall ["hint", _player];
+    diag_log format ["[ZEUS SYSTEM] %1 (%2) назначен Zeus", _name, _uid];
+};
 
-            private _message = "";
-            if (_displayList isEqualTo []) then {
-                _message = "Нет игроков, использующих Зевс сейчас или недавно";
-                diag_log "[ZEUS DEBUG] Нет активных или недавно бывших в Зевсе игроков";
-            } else {
-                _message = "Активные/недавние Зевсы:\n" + (_displayList joinString "\n");
-                diag_log format ["[ZEUS DEBUG] Активные/недавние Зевсы: %1", _displayList joinString ", "];
+// Назначение при старте
+{
+    if (isPlayer _x && {getPlayerUID _x in allowedSteamIDs}) then {
+        [_x] spawn fnc_assignZeus;
+    };
+} forEach allPlayers;
+
+// Назначение при входе
+addMissionEventHandler ["PlayerConnected", {
+    params ["_id", "_uid", "_name", "_jip", "_owner"];
+
+    [_uid] spawn {
+        params ["_uid"];
+        sleep 5;
+        {
+            if (isPlayer _x && {getPlayerUID _x == _uid}) exitWith {
+                [_x] spawn fnc_assignZeus;
             };
+        } forEach allPlayers;
+    };
+}];
 
-            if !(_zeusHolders isEqualTo []) then {
-                [_message] remoteExecCall ["hint", _zeusHolders];
+// Мониторинг каждые 5 сек
+[] spawn {
+    while {true} do {
+        {
+            if (isPlayer _x && {getPlayerUID _x in allowedSteamIDs}) then {
+                private _cur = getAssignedCuratorLogic _x;
+                if (isNull _cur) then {
+                    diag_log format ["[ZEUS MONITOR] У %1 curator отсутствует. Переназначаем.", name _x];
+                    [_x] spawn fnc_assignZeus;
+                };
             };
-
-            sleep 10;
-        };
+        } forEach allPlayers;
+        sleep 5;
     };
 };
