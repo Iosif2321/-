@@ -10,7 +10,7 @@ fnc_deployMedTent = {
 
     private _tentClass = "Land_MedicalTent_01_white_generic_open_F";
 
-    // Позиция за машиной с учётом рельефа
+    // Позиция за машиной
     private _dir = getDir _target;
     private _vehicleSize = (boundingBoxReal _target select 1) select 1;
     private _distance = _vehicleSize + 7;
@@ -21,18 +21,8 @@ fnc_deployMedTent = {
     private _tentPosATL = ASLToATL _tentPosASL;
     private _tentDir = _dir + 180;
 
-    // Получаем размеры палатки
-    private _tempTent = createVehicle [_tentClass, [0,0,0], [], 0, "NONE"];
-    private _tentBounds = boundingBoxReal _tempTent;
-    deleteVehicle _tempTent;
-
-    private _min = _tentBounds select 0;
-    private _max = _tentBounds select 1;
-    private _tentRadiusX = abs ((_max select 0) - (_min select 0)) / 2;
-    private _tentRadiusY = abs ((_max select 1) - (_min select 1)) / 2;
-    private _tentRadius = sqrt (_tentRadiusX^2 + _tentRadiusY^2);
-
-    // Проверка на препятствия
+    // Проверка препятствий
+    private _tentRadius = 7;
     private _nearObjects = nearestObjects [_tentPosATL, ["AllVehicles", "Man", "Thing", "Static", "Building"], _tentRadius + 1];
     private _nearTerrain = nearestTerrainObjects [_tentPosATL, ["TREE", "BUSH", "ROCK", "HOUSE", "WALL", "FENCE"], _tentRadius + 1];
     _nearObjects = _nearObjects select { _x != _target && alive _x };
@@ -44,6 +34,19 @@ fnc_deployMedTent = {
     // === Спавн палатки ===
     private _tent = createVehicle [_tentClass, _tentPosATL, [], 0, "NONE"];
     _tent setDir _tentDir;
+    _tent setVariable ["ace_medical_isMedicalFacility", true, true];
+
+    // === Создание триггера "MedicalTent" ===
+    private _trigger = createTrigger ["EmptyDetector", _tentPosATL, false];
+    _trigger setTriggerArea [7, 7, 0, false];
+    _trigger setTriggerActivation ["ANY", "PRESENT", true];
+    _trigger attachTo [_tent, [0, 0, 0]];
+    _trigger setVehicleVarName "MedicalTent";
+    publicVariable "MedicalTent";
+
+    // === Респавн-позиция (по группе), сохраняем ID
+    private _respawnID = [group _caller, _tent, "Medical Tent"] call BIS_fnc_addRespawnPosition;
+    _tent setVariable ["respawnID", _respawnID, true];
 
     // === Высадка экипажа ===
     {
@@ -54,10 +57,20 @@ fnc_deployMedTent = {
     // === Блокировка машины ===
     _target setFuel 0;
     _target lock 2;
-
-    // === Переменные ===
     _target setVariable ["deployedTent", _tent, true];
     _target setVariable ["wasFuel", 1, true];
+
+    // === Удаление всего при уничтожении машины ===
+    _target addEventHandler ["Killed", {
+        params ["_vehicle"];
+        private _tent = _vehicle getVariable ["deployedTent", objNull];
+        if (!isNull _tent) then { deleteVehicle _tent; };
+        if (!isNil "MedicalTent") then { deleteVehicle MedicalTent; };
+        private _respawnID = _tent getVariable ["respawnID", -1];
+        if (_respawnID isEqualType 0 && {_respawnID != -1}) then {
+            [group _vehicle, _respawnID] call BIS_fnc_removeRespawnPosition;
+        };
+    }];
 
     // === Действие "Убрать палатку" ===
     [_tent, ["Убрать палатку", {
@@ -68,6 +81,15 @@ fnc_deployMedTent = {
             _vehicle setVariable ["deployedTent", nil, true];
             _vehicle setFuel (_vehicle getVariable ["wasFuel", 1]);
             _vehicle lock 0;
+
+            if (!isNil "MedicalTent") then {
+                deleteVehicle MedicalTent;
+            };
+
+            private _respawnID = _tent getVariable ["respawnID", -1];
+            if (_respawnID isEqualType 0 && {_respawnID != -1}) then {
+                [group _caller, _respawnID] call BIS_fnc_removeRespawnPosition;
+            };
         };
         ["Палатка убрана, машина снова доступна."] remoteExec ["hint", _caller];
     }, nil, 1.5, true, true, "", "true", 5]] remoteExec ["addAction", 0, true];
@@ -75,7 +97,7 @@ fnc_deployMedTent = {
     ["Медицинская палатка развернута. Машина временно заблокирована."] remoteExec ["hint", _caller];
 };
 
-// === Добавляем действия на уже существующие HEMTT ===
+// === Действие на уже существующие HEMTT ===
 {
     if (_x isKindOf "B_Truck_01_medical_F") then {
         [_x, ["Развернуть мед.палатку", {
@@ -85,7 +107,7 @@ fnc_deployMedTent = {
     };
 } forEach vehicles;
 
-// === Обработчик появления новых HEMTT ===
+// === Обработчик новых машин ===
 addMissionEventHandler ["EntityCreated", {
     params ["_entity"];
     if (_entity isKindOf "B_Truck_01_medical_F") then {
