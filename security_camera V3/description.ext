@@ -1,0 +1,360 @@
+class CfgFunctions
+{
+    class CCTV
+    {
+        class Camera
+        {
+            file = "scripts\camera";
+            class initCamera {};
+            class cameraFunctions {};
+        };
+    };
+};
+
+// Базовые классы для диалогов
+class RscText
+{
+    type = 0;
+    idc = -1;
+    style = 0;
+    colorBackground[] = {0, 0, 0, 0};
+    colorText[] = {1, 1, 1, 1};
+    font = "PuristaMedium";
+    sizeEx = 0.04;
+    h = 0.04;
+    text = "";
+    shadow = 2;
+};
+
+class RscButton
+{
+    type = 1;
+    style = 2;
+    idc = -1;
+    colorText[] = {1, 1, 1, 1};
+    colorDisabled[] = {0.4, 0.4, 0.4, 1};
+    colorBackground[] = {0.2, 0.2, 0.2, 0.9};
+    colorBackgroundDisabled[] = {0.95, 0.95, 0.95, 1};
+    colorBackgroundActive[] = {0.3, 0.3, 0.3, 1};
+    colorFocused[] = {0.3, 0.3, 0.3, 1};
+    colorShadow[] = {0, 0, 0, 1};
+    colorBorder[] = {0, 0, 0, 1};
+    soundEnter[] = {"\A3\ui_f\data\sound\RscButton\soundEnter", 0.09, 1};
+    soundPush[] = {"\A3\ui_f\data\sound\RscButton\soundPush", 0.09, 1};
+    soundClick[] = {"\A3\ui_f\data\sound\RscButton\soundClick", 0.09, 1};
+    soundEscape[] = {"\A3\ui_f\data\sound\RscButton\soundEscape", 0.09, 1};
+    font = "PuristaMedium";
+    sizeEx = 0.04;
+    offsetX = 0.003;
+    offsetY = 0.003;
+    offsetPressedX = 0.002;
+    offsetPressedY = 0.002;
+    borderSize = 0;
+};
+
+class RscListBox
+{
+    type = 5;
+    style = 16;
+    idc = -1;
+    colorBackground[] = {0.2, 0.2, 0.2, 0.9};
+    colorSelectBackground[] = {0.5, 0.5, 0.5, 0.7};
+    colorSelectBackground2[] = {0.5, 0.5, 0.5, 0.7};
+    colorText[] = {1, 1, 1, 1};
+    colorDisabled[] = {1, 1, 1, 0.25};
+    colorSelect[] = {1, 1, 1, 1};
+    colorSelect2[] = {1, 1, 1, 1};
+    colorShadow[] = {0, 0, 0, 0.5};
+    colorPicture[] = {1, 1, 1, 1};
+    colorPictureSelected[] = {1, 1, 1, 1};
+    colorPictureDisabled[] = {1, 1, 1, 0.25};
+    soundSelect[] = {"\A3\ui_f\data\sound\RscListbox\soundSelect", 0.09, 1};
+    rowHeight = 0.04;
+    period = 1;
+    maxHistoryDelay = 1;
+    font = "PuristaMedium";
+    sizeEx = 0.04;
+    arrowEmpty = "#(argb,8,8,3)color(1,1,1,1)";
+    arrowFull = "#(argb,8,8,3)color(1,1,1,1)";
+    wholeHeight = 0.45;
+    autoScrollSpeed = -1;
+    autoScrollDelay = 5;
+    autoScrollRewind = 0;
+    shadow = 0;
+};
+
+class RscPicture
+{
+    type = 0;
+    idc = -1;
+    style = 48;
+    colorBackground[] = {0, 0, 0, 0};
+    colorText[] = {1, 1, 1, 1};
+    font = "PuristaMedium";
+    sizeEx = 0;
+    text = "";
+};
+
+class RscFrame
+{
+    type = 0;
+    idc = -1;
+    style = 64;
+    colorBackground[] = {0, 0, 0, 0};
+    colorText[] = {1, 1, 1, 1};
+    font = "PuristaMedium";
+    sizeEx = 0.02;
+    text = "";
+};
+
+// Диалог меню выбора камеры
+class CameraMenuDialog
+{
+    idd = 5000;
+    movingEnable = false;
+    enableSimulation = true;
+    onLoad = "";
+    onUnload = "";
+    
+    class Controls
+    {
+        class Background: RscText
+        {
+            idc = -1;
+            x = 0.3 * safezoneW + safezoneX;
+            y = 0.25 * safezoneH + safezoneY;
+            w = 0.4 * safezoneW;
+            h = 0.5 * safezoneH;
+            colorBackground[] = {0, 0, 0, 0.8};
+        };
+        
+        class TitleText: RscText
+        {
+            idc = -1;
+            text = "Камеры наблюдения";
+            x = 0.3 * safezoneW + safezoneX;
+            y = 0.25 * safezoneH + safezoneY;
+            w = 0.4 * safezoneW;
+            h = 0.05 * safezoneH;
+            colorBackground[] = {0.1, 0.1, 0.1, 1};
+            colorText[] = {1, 1, 1, 1};
+            font = "PuristaBold";
+            sizeEx = 0.05;
+            style = 2;
+        };
+        
+        class CameraList: RscListBox
+        {
+            idc = 5100;
+            x = 0.325 * safezoneW + safezoneX;
+            y = 0.32 * safezoneH + safezoneY;
+            w = 0.35 * safezoneW;
+            h = 0.35 * safezoneH;
+            colorBackground[] = {0, 0, 0, 0.5};
+            rowHeight = 0.05;
+            sizeEx = 0.04;
+        };
+        
+        class ConnectButton: RscButton
+        {
+            idc = 5101;
+            text = "Подключиться";
+            x = 0.325 * safezoneW + safezoneX;
+            y = 0.68 * safezoneH + safezoneY;
+            w = 0.15 * safezoneW;
+            h = 0.05 * safezoneH;
+            action = "call openCamView";
+        };
+        
+        class CloseButton: RscButton
+        {
+            idc = 5102;
+            text = "Закрыть";
+            x = 0.525 * safezoneW + safezoneX;
+            y = 0.68 * safezoneH + safezoneY;
+            w = 0.15 * safezoneW;
+            h = 0.05 * safezoneH;
+            action = "call closeCamMenu";
+        };
+    };
+};
+
+// Диалог просмотра камеры
+class CameraViewDialog
+{
+    idd = 5001;
+    movingEnable = false;
+    enableSimulation = true;
+    onLoad = "";
+    onUnload = "call disconnectCam";
+    
+    class Controls
+    {
+        class MainBackground: RscText
+        {
+            idc = -1;
+            x = 0.25 * safezoneW + safezoneX;
+            y = 0.2 * safezoneH + safezoneY;
+            w = 0.5 * safezoneW;
+            h = 0.6 * safezoneH;
+            colorBackground[] = {0, 0, 0, 0.8};
+        };
+        
+        class TitleText: RscText
+        {
+            idc = 5198;
+            text = "Камера";
+            x = 0.25 * safezoneW + safezoneX;
+            y = 0.2 * safezoneH + safezoneY;
+            w = 0.5 * safezoneW;
+            h = 0.05 * safezoneH;
+            colorBackground[] = {0.1, 0.1, 0.1, 1};
+            colorText[] = {1, 1, 1, 1};
+            font = "PuristaBold";
+            sizeEx = 0.05;
+            style = 2;
+        };
+        
+        // Основное окно камеры для одиночного режима
+        class CameraView: RscPicture
+        {
+            idc = 5200;
+            text = "#(argb,512,512,1)r2t(CameraFeed,1.333)";
+            x = 0.26 * safezoneW + safezoneX;
+            y = 0.25 * safezoneH + safezoneY;
+            w = 0.48 * safezoneW;
+            h = 0.36 * safezoneH;
+        };
+        
+        // Контроллы многокамерного режима (создаются динамически)
+        // Контроллы 5400-5407 (изображения камер)
+        // Контроллы 5500-5507 (бордюры для выделения активной камеры)
+        // Контроллы 5600-5607 (подписи камер)
+
+        // Кнопки навигации между камерами        
+        class PrevCamButton: RscButton
+        {
+            idc = 5201;
+            text = "< Пред";
+            x = 0.26 * safezoneW + safezoneX;
+            y = 0.62 * safezoneH + safezoneY;
+            w = 0.08 * safezoneW;
+            h = 0.04 * safezoneH;
+        };
+        
+        class NextCamButton: RscButton
+        {
+            idc = 5202;
+            text = "След >";
+            x = 0.34 * safezoneW + safezoneX;
+            y = 0.62 * safezoneH + safezoneY;
+            w = 0.08 * safezoneW;
+            h = 0.04 * safezoneH;
+        };
+        
+        // Кнопки управления
+        class NVGButton: RscButton
+        {
+            idc = 5203;
+            text = "ВКЛЮЧИТЬ ПНВ";
+            x = 0.46 * safezoneW + safezoneX;
+            y = 0.62 * safezoneH + safezoneY;
+            w = 0.12 * safezoneW;
+            h = 0.04 * safezoneH;
+        };
+        
+        class DisconnectButton: RscButton
+        {
+            idc = 5204;
+            text = "ОТКЛЮЧИТЬСЯ";
+            x = 0.66 * safezoneW + safezoneX;
+            y = 0.62 * safezoneH + safezoneY;
+            w = 0.08 * safezoneW;
+            h = 0.04 * safezoneH;
+        };
+        
+        // Кнопки управления камерой
+        class RotateLeftButton: RscButton
+        {
+            idc = 5300;
+            text = "←";
+            x = 0.26 * safezoneW + safezoneX;
+            y = 0.67 * safezoneH + safezoneY;
+            w = 0.04 * safezoneW;
+            h = 0.04 * safezoneH;
+        };
+        
+        class RotateRightButton: RscButton
+        {
+            idc = 5301;
+            text = "→";
+            x = 0.34 * safezoneW + safezoneX;
+            y = 0.67 * safezoneH + safezoneY;
+            w = 0.04 * safezoneW;
+            h = 0.04 * safezoneH;
+        };
+        
+        class RotateUpButton: RscButton
+        {
+            idc = 5302;
+            text = "↑";
+            x = 0.30 * safezoneW + safezoneX;
+            y = 0.67 * safezoneH + safezoneY;
+            w = 0.04 * safezoneW;
+            h = 0.04 * safezoneH;
+        };
+        
+        class RotateDownButton: RscButton
+        {
+            idc = 5303;
+            text = "↓";
+            x = 0.30 * safezoneW + safezoneX;
+            y = 0.71 * safezoneH + safezoneY;
+            w = 0.04 * safezoneW;
+            h = 0.04 * safezoneH;
+        };
+        
+        // Дополнительные кнопки управления
+        class StepButton: RscButton
+        {
+            idc = 5304;
+            text = "ШАГ: 30°";
+            x = 0.39 * safezoneW + safezoneX;
+            y = 0.67 * safezoneH + safezoneY;
+            w = 0.08 * safezoneW;
+            h = 0.04 * safezoneH;
+        };
+        
+        class FixButton: RscButton
+        {
+            idc = 5305;
+            text = "ФИКСАЦИЯ";
+            x = 0.39 * safezoneW + safezoneX;
+            y = 0.71 * safezoneH + safezoneY;
+            w = 0.08 * safezoneW;
+            h = 0.04 * safezoneH;
+        };
+        
+        // Кнопки переключения режимов
+        class MultiCamModeButton: RscButton
+        {
+            idc = 5306;
+            text = "МУЛЬТИ-РЕЖИМ";
+            x = 0.48 * safezoneW + safezoneX;
+            y = 0.67 * safezoneH + safezoneY;
+            w = 0.10 * safezoneW;
+            h = 0.04 * safezoneH;
+        };
+        
+        class MultiCamCountButton: RscButton
+        {
+            idc = 5307;
+            text = "КАМЕР: 4";
+            x = 0.48 * safezoneW + safezoneX;
+            y = 0.71 * safezoneH + safezoneY;
+            w = 0.10 * safezoneW;
+            h = 0.04 * safezoneH;
+            show = 0;
+        };
+    };
+};
