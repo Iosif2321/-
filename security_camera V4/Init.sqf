@@ -1,0 +1,2 @@
+[] execVM "cameraMenu.sqf"; 
+
