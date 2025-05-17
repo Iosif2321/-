@@ -1,0 +1,646 @@
+class RscText
+{
+    type = 0;
+    idc = -1;
+    style = 0;
+    colorBackground[] = {0, 0, 0, 0};
+    colorText[] = {1, 1, 1, 1};
+    font = "PuristaMedium";
+    sizeEx = 0.04;
+    h = 0.04;
+    text = "";
+    shadow = 2;
+};
+
+class RscButton
+{
+    type = 1;
+    style = 2;
+    idc = -1;
+    colorText[] = {1, 1, 1, 1};
+    colorDisabled[] = {0.4, 0.4, 0.4, 1};
+    colorBackground[] = {0.2, 0.2, 0.2, 0.9};
+    colorBackgroundDisabled[] = {0.95, 0.95, 0.95, 1};
+    colorBackgroundActive[] = {0.3, 0.3, 0.3, 1};
+    colorFocused[] = {0.3, 0.3, 0.3, 1};
+    colorShadow[] = {0, 0, 0, 1};
+    colorBorder[] = {0, 0, 0, 1};
+    soundEnter[] = {"\A3\ui_f\data\sound\RscButton\soundEnter", 0.09, 1};
+    soundPush[] = {"\A3\ui_f\data\sound\RscButton\soundPush", 0.09, 1};
+    soundClick[] = {"\A3\ui_f\data\sound\RscButton\soundClick", 0.09, 1};
+    soundEscape[] = {"\A3\ui_f\data\sound\RscButton\soundEscape", 0.09, 1};
+    font = "PuristaMedium";
+    sizeEx = 0.04;
+    offsetX = 0.003;
+    offsetY = 0.003;
+    offsetPressedX = 0.002;
+    offsetPressedY = 0.002;
+    borderSize = 0;
+};
+
+class ScrollBar
+{
+    color[] = {1, 1, 1, 0.6};
+    colorActive[] = {1, 1, 1, 1};
+    colorDisabled[] = {1, 1, 1, 0.3};
+    thumb = "\A3\ui_f\data\gui\cfg\scrollbar\thumb_ca.paa";
+    arrowEmpty = "\A3\ui_f\data\gui\cfg\scrollbar\arrowEmpty_ca.paa";
+    arrowFull = "\A3\ui_f\data\gui\cfg\scrollbar\arrowFull_ca.paa";
+    border = "\A3\ui_f\data\gui\cfg\scrollbar\border_ca.paa";
+    shadow = 0;
+    scrollSpeed = 0.06;
+    width = 0.021;
+    height = 0;
+    autoScrollEnabled = 0;
+    autoScrollSpeed = -1;
+    autoScrollDelay = 5;
+    autoScrollRewind = 0;
+};
+
+class RscListBox
+{
+    type = 5;
+    style = 16;
+    idc = -1;
+    colorBackground[] = {0.2, 0.2, 0.2, 0.9};
+    colorSelectBackground[] = {0.5, 0.5, 0.5, 0.7};
+    colorSelectBackground2[] = {0.5, 0.5, 0.5, 0.7};
+    colorText[] = {1, 1, 1, 1};
+    colorDisabled[] = {1, 1, 1, 0.25};
+    colorSelect[] = {1, 1, 1, 1};
+    colorSelect2[] = {1, 1, 1, 1};
+    colorShadow[] = {0, 0, 0, 0.5};
+    colorPicture[] = {1, 1, 1, 1};
+    colorPictureSelected[] = {1, 1, 1, 1};
+    colorPictureDisabled[] = {1, 1, 1, 0.25};
+    soundSelect[] = {"\A3\ui_f\data\sound\RscListbox\soundSelect", 0.09, 1};
+    rowHeight = 0.04;
+    period = 1;
+    maxHistoryDelay = 1;
+    font = "PuristaMedium";
+    sizeEx = 0.04;
+    arrowEmpty = "#(argb,8,8,3)color(1,1,1,1)";
+    arrowFull = "#(argb,8,8,3)color(1,1,1,1)";
+    wholeHeight = 0.45;
+    autoScrollSpeed = -1;
+    autoScrollDelay = 5;
+    autoScrollRewind = 0;
+    shadow = 0;
+    
+    class ListScrollBar: ScrollBar
+    {
+        color[] = {1, 1, 1, 0.6};
+        colorActive[] = {1, 1, 1, 1};
+        colorDisabled[] = {1, 1, 1, 0.3};
+        thumb = "\A3\ui_f\data\gui\cfg\scrollbar\thumb_ca.paa";
+        arrowEmpty = "\A3\ui_f\data\gui\cfg\scrollbar\arrowEmpty_ca.paa";
+        arrowFull = "\A3\ui_f\data\gui\cfg\scrollbar\arrowFull_ca.paa";
+        border = "\A3\ui_f\data\gui\cfg\scrollbar\border_ca.paa";
+        shadow = 0;
+    };
+};
+
+class RscPicture
+{
+    type = 0;
+    idc = -1;
+    style = 48;
+    colorBackground[] = {0, 0, 0, 0};
+    colorText[] = {1, 1, 1, 1};
+    font = "PuristaMedium";
+    sizeEx = 0;
+    text = "";
+    shadow = 0;
+};
+
+class RscFrame
+{
+    type = 0;
+    idc = -1;
+    style = 64;
+    colorBackground[] = {0, 0, 0, 0};
+    colorText[] = {1, 1, 1, 1};
+    font = "PuristaMedium";
+    sizeEx = 0.02;
+    text = "";
+};
+
+class CameraMenuDialog
+{
+    idd = 5000;
+    movingEnable = false;
+    enableSimulation = true;
+    onLoad = "";
+    onUnload = "";
+    
+    class Controls
+    {
+        class Background: RscText
+        {
+            idc = -1;
+            x = 0.3 * safezoneW + safezoneX;
+            y = 0.25 * safezoneH + safezoneY;
+            w = 0.4 * safezoneW;
+            h = 0.5 * safezoneH;
+            colorBackground[] = {0, 0, 0, 0.8};
+        };
+        
+        class TitleText: RscText
+        {
+            idc = -1;
+            text = "Камеры наблюдения";
+            x = 0.3 * safezoneW + safezoneX;
+            y = 0.25 * safezoneH + safezoneY;
+            w = 0.4 * safezoneW;
+            h = 0.05 * safezoneH;
+            colorBackground[] = {0.1, 0.1, 0.1, 1};
+            colorText[] = {1, 1, 1, 1};
+            font = "PuristaBold";
+            sizeEx = 0.05;
+            style = 2;
+        };
+        
+        class CameraList: RscListBox
+        {
+            idc = 5100;
+            x = 0.325 * safezoneW + safezoneX;
+            y = 0.32 * safezoneH + safezoneY;
+            w = 0.35 * safezoneW;
+            h = 0.35 * safezoneH;
+            colorBackground[] = {0, 0, 0, 0.5};
+            rowHeight = 0.05;
+            sizeEx = 0.04;
+        };
+        
+        class ConnectButton: RscButton
+        {
+            idc = 5101;
+            text = "Подключиться";
+            x = 0.325 * safezoneW + safezoneX;
+            y = 0.68 * safezoneH + safezoneY;
+            w = 0.15 * safezoneW;
+            h = 0.05 * safezoneH;
+            action = "call openCamView";
+        };
+        
+        class CloseButton: RscButton
+        {
+            idc = 5102;
+            text = "Закрыть";
+            x = 0.525 * safezoneW + safezoneX;
+            y = 0.68 * safezoneH + safezoneY;
+            w = 0.15 * safezoneW;
+            h = 0.05 * safezoneH;
+            action = "call closeCamMenu";
+        };
+    };
+};
+
+class CameraViewDialog
+{
+    idd = 5001;
+    movingEnable = false;
+    enableSimulation = true;
+    onLoad = "";
+    onUnload = "call disconnectCam";
+    
+    class Controls
+    {
+        class MainBackground: RscText
+        {
+            idc = -1;
+            x = safezoneX;
+            y = safezoneY;
+            w = safezoneW;
+            h = safezoneH;
+            colorBackground[] = {0, 0, 0, 0.8};
+        };
+        
+        class TitleText: RscText
+        {
+            idc = 5198;
+            text = "Камера";
+            x = safezoneX + 0.01;
+            y = safezoneY + 0.01;
+            w = 0.15;
+            h = 0.04;
+            colorBackground[] = {0.1, 0.1, 0.1, 1};
+            colorText[] = {1, 1, 1, 1};
+            font = "PuristaBold";
+            sizeEx = 0.04;
+            style = 2;
+        };
+        
+        class CameraView: RscPicture
+        {
+            idc = 5200;
+            text = "#(argb,512,512,1)r2t(CameraFeed,1.777)";
+            x = safezoneX + 0.01;
+            y = safezoneY + 0.06;
+            w = safezoneW - 0.02;
+            h = safezoneH - 0.07;
+        };
+        
+        class MultiCamView0: RscPicture
+        {
+            idc = 5400;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            show = 0;
+        };
+        class MultiCamView1: RscPicture
+        {
+            idc = 5401;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            show = 0;
+        };
+        class MultiCamView2: RscPicture
+        {
+            idc = 5402;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            show = 0;
+        };
+        class MultiCamView3: RscPicture
+        {
+            idc = 5403;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            show = 0;
+        };
+        class MultiCamView4: RscPicture
+        {
+            idc = 5404;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            show = 0;
+        };
+        class MultiCamView5: RscPicture
+        {
+            idc = 5405;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            show = 0;
+        };
+        class MultiCamView6: RscPicture
+        {
+            idc = 5406;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            show = 0;
+        };
+        class MultiCamView7: RscPicture
+        {
+            idc = 5407;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            show = 0;
+        };
+        
+        class MultiCamBorder0: RscText
+        {
+            idc = 5500;
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 0};
+            colorBackground[] = {0, 0, 0, 0};
+            show = 0;
+        };
+        class MultiCamBorder1: RscText
+        {
+            idc = 5501;
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 0};
+            colorBackground[] = {0, 0, 0, 0};
+            show = 0;
+        };
+        class MultiCamBorder2: RscText
+        {
+            idc = 5502;
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 0};
+            colorBackground[] = {0, 0, 0, 0};
+            show = 0;
+        };
+        class MultiCamBorder3: RscText
+        {
+            idc = 5503;
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 0};
+            colorBackground[] = {0, 0, 0, 0};
+            show = 0;
+        };
+        class MultiCamBorder4: RscText
+        {
+            idc = 5504;
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 0};
+            colorBackground[] = {0, 0, 0, 0};
+            show = 0;
+        };
+        class MultiCamBorder5: RscText
+        {
+            idc = 5505;
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 0};
+            colorBackground[] = {0, 0, 0, 0};
+            show = 0;
+        };
+        class MultiCamBorder6: RscText
+        {
+            idc = 5506;
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 0};
+            colorBackground[] = {0, 0, 0, 0};
+            show = 0;
+        };
+        class MultiCamBorder7: RscText
+        {
+            idc = 5507;
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 0};
+            colorBackground[] = {0, 0, 0, 0};
+            show = 0;
+        };
+        
+        class MultiCamText0: RscText
+        {
+            idc = 5600;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 1};
+            show = 0;
+        };
+        class MultiCamText1: RscText
+        {
+            idc = 5601;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 1};
+            show = 0;
+        };
+        class MultiCamText2: RscText
+        {
+            idc = 5602;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 1};
+            show = 0;
+        };
+        class MultiCamText3: RscText
+        {
+            idc = 5603;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 1};
+            show = 0;
+        };
+        class MultiCamText4: RscText
+        {
+            idc = 5604;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 1};
+            show = 0;
+        };
+        class MultiCamText5: RscText
+        {
+            idc = 5605;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 1};
+            show = 0;
+        };
+        class MultiCamText6: RscText
+        {
+            idc = 5606;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 1};
+            show = 0;
+        };
+        class MultiCamText7: RscText
+        {
+            idc = 5607;
+            text = "";
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorText[] = {1, 1, 1, 1};
+            show = 0;
+        };
+
+        class PrevCamButton: RscButton
+        {
+            idc = 5201;
+            text = "< Пред";
+            x = safezoneX + 0.17;
+            y = safezoneY + 0.01;
+            w = 0.08;
+            h = 0.04;
+        };
+        
+        class NextCamButton: RscButton
+        {
+            idc = 5202;
+            text = "След >";
+            x = safezoneX + 0.26;
+            y = safezoneY + 0.01;
+            w = 0.08;
+            h = 0.04;
+        };
+        
+        class NVGButton: RscButton
+        {
+            idc = 5203;
+            text = "ВКЛЮЧИТЬ ПНВ";
+            x = safezoneX + 0.35;
+            y = safezoneY + 0.01;
+            w = 0.12;
+            h = 0.04;
+        };
+        
+        class DisconnectButton: RscButton
+        {
+            idc = 5204;
+            text = "ОТКЛЮЧИТЬСЯ";
+            x = safezoneX + 0.48;
+            y = safezoneY + 0.01;
+            w = 0.08;
+            h = 0.04;
+        };
+        
+        class RotateLeftButton: RscButton
+        {
+            idc = 5300;
+            text = "←";
+            x = safezoneX + 0.57;
+            y = safezoneY + 0.01;
+            w = 0.04;
+            h = 0.04;
+        };
+        
+        class RotateRightButton: RscButton
+        {
+            idc = 5301;
+            text = "→";
+            x = safezoneX + 0.62;
+            y = safezoneY + 0.01;
+            w = 0.04;
+            h = 0.04;
+        };
+        
+        class RotateUpButton: RscButton
+        {
+            idc = 5302;
+            text = "↑";
+            x = safezoneX + 0.67;
+            y = safezoneY + 0.01;
+            w = 0.04;
+            h = 0.04;
+        };
+        
+        class RotateDownButton: RscButton
+        {
+            idc = 5303;
+            text = "↓";
+            x = safezoneX + 0.72;
+            y = safezoneY + 0.01;
+            w = 0.04;
+            h = 0.04;
+        };
+        
+        class StepButton: RscButton
+        {
+            idc = 5304;
+            text = "ШАГ: 30°";
+            x = safezoneX + 0.77;
+            y = safezoneY + 0.01;
+            w = 0.08;
+            h = 0.04;
+        };
+        
+        class FixButton: RscButton
+        {
+            idc = 5305;
+            text = "ФИКСАЦИЯ";
+            x = safezoneX + 0.86;
+            y = safezoneY + 0.01;
+            w = 0.08;
+            h = 0.04;
+        };
+        
+        class MultiCamModeButton: RscButton
+        {
+            idc = 5306;
+            text = "МУЛЬТИ-РЕЖИМ";
+            x = safezoneX + 0.95;
+            y = safezoneY + 0.01;
+            w = 0.10;
+            h = 0.04;
+        };
+        
+        class MultiCamCountButton: RscButton
+        {
+            idc = 5307;
+            text = "КАМЕР: 4";
+            x = safezoneX + 1.06;
+            y = safezoneY + 0.01;
+            w = 0.10;
+            h = 0.04;
+            show = 0;
+        };
+        
+        class PrevSlotButton: RscButton
+        {
+            idc = 5308;
+            text = "< Пред. слот";
+            x = safezoneX + 1.17;
+            y = safezoneY + 0.01;
+            w = 0.10;
+            h = 0.04;
+            show = 0;
+        };
+        
+        class NextSlotButton: RscButton
+        {
+            idc = 5309;
+            text = "След. слот >";
+            x = safezoneX + 1.28;
+            y = safezoneY + 0.01;
+            w = 0.10;
+            h = 0.04;
+            show = 0;
+        };
+    };
+};
