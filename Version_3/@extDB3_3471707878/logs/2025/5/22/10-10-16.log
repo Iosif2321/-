@@ -1,0 +1,80 @@
+
+extDB3: https://bitbucket.org/torndeco/extdb3/wiki/Home
+extDB3: Version: 1.033
+extDB3: Windows Version
+Message: All development for extDB3 is done on a Linux Dedicated Server
+Message: If you would like to Donate to extDB3 Development
+Message: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2SUEFTGABTAM2
+Message: Also leave a message if there is any particular feature you would like to see added.
+Message: Thanks for all the people that have donated.
+Message: Torndeco: 18/05/15
+
+Message: This version was modified and include some improvement
+Message: The lib was recompiled using new version of TBBMalloc, Boost and MariaDB connector
+Message: The worker threads limitation was removed
+Message: Steez: 30/10/2020
+
+
+extDB3: Found extdb3-conf.ini
+extDB3: Detected 16 Cores, Setting up 6 Worker Threads
+extDB3: Detected 16 Cores, Setting up 16 Worker Threads
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+extDB3: ...
+
+
+[10:12:08:691197 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:12:08:691221 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:10:10:0.00143909:76561198245200164
+[10:12:18:696807 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:12:18:696831 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17732.8:-50000:0.00143909:76561198245200164
+[10:12:28:708578 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:12:28:708609 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:12:38:708696 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:12:38:708726 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:12:48:710957 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:12:48:710990 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:12:58:724290 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:12:58:724319 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:13:08:728222 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:13:08:728249 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:13:18:733385 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:13:18:733406 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:13:28:733930 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:13:28:733965 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:13:38:735729 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:13:38:735754 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:13:48:741096 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:13:48:741156 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:13:58:744669 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:13:58:744692 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:14:08:756913 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:14:08:756939 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:14:18:773629 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:14:18:773651 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:14:28:781566 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:14:28:781590 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:14:38:797323 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:14:38:797346 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:14:48:814216 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:14:48:814241 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:14:58:818577 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:14:58:818602 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:15:08:819340 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:15:08:819365 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:15:18:834865 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:15:18:834887 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
+[10:15:28:838071 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Config Invalid Number Number of Inputs Got 5 Expected 6
+[10:15:28:838100 -07:00] [Thread 7624] extDB3: SQL: Error extDB3Exception: Input: savePlayer:[ISB] SP 2321 Ded:-17741.9:-49999:0.00143909:76561198245200164
