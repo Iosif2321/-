@@ -66,6 +66,45 @@ cameraBase = objNull;
 currentCamIndex = -1;
 nvgEnabled = false;
 tfar_relay_agent = objNull;
+tfarEH = -1;
+
+createCamLight = {
+    params ["_base"];
+    private _l = "#lightpoint" createVehicleLocal getPosATL _base;
+    _l setLightBrightness 5;
+    _l setLightAmbient [1,1,1];
+    _l setLightColor [1,1,1];
+    _l setLightAttenuation [0,0,0,0.1];
+    _l attachTo [_base,[0,0,2]];
+    _l
+};
+
+setupTfarRelay = {
+    params ["_base"];
+    if (isNil "tfar_relay_agent") then {
+        tfar_relay_agent = "VirtualMan_F" createVehicleLocal [0,0,0];
+        tfar_relay_agent setVariable ["TFAR_forceSpectator",true,true];
+    };
+    tfar_relay_agent attachTo [_base,[0,0,0]];
+    player setVariable ["TFAR_spectatorEntity",tfar_relay_agent,true];
+    if (tfarEH == -1) then {
+        tfarEH = addMissionEventHandler ["EachFrame",{
+            if (!isNull tfar_relay_agent) then {
+                if (!isNull activeCam) then {tfar_relay_agent setPosASL getPosASL activeCam} else {
+                    if (multiCamMode && {selectedMultiCamIndex < count multiCameraBase}) then {
+                        tfar_relay_agent setPosASL getPosASL (multiCameraBase select selectedMultiCamIndex)
+                    };
+                };
+            };
+        }];
+    };
+};
+
+stopTfarRelay = {
+    if (tfarEH != -1) then {removeMissionEventHandler ["EachFrame",tfarEH]; tfarEH = -1};
+    player setVariable ["TFAR_spectatorEntity",objNull,true];
+    if (!isNull tfar_relay_agent) then {deleteVehicle tfar_relay_agent; tfar_relay_agent = objNull};
+};
 
 // Переменные для источников света (чтобы можно было удалять их при отключении)
 if (isNil "activeLight") then {
@@ -203,22 +242,8 @@ openCamView = {
     "CameraFeed" setPiPEffect [0]; // ПНВ выключено по умолчанию
     diag_log format ["Created activeCam at %1", getPosATL _obj];
 
-    // Добавление более мощного источника света
-    activeLight = "#lightpoint" createVehicleLocal getPosATL cameraBase;
-    activeLight setLightBrightness 5.0; // Увеличиваем яркость
-    activeLight setLightAmbient [1, 1, 1];
-    activeLight setLightColor [1, 1, 1];
-    activeLight setLightAttenuation [0, 0, 0, 0.1]; // Уменьшаем затухание
-    activeLight attachTo [cameraBase, [0, 0, 2]];
-    diag_log "Added enhanced light to camera";
-
-    if (isNil "tfar_relay_agent") then {
-        tfar_relay_agent = "VirtualMan_F" createVehicleLocal [0,0,0];
-        tfar_relay_agent setVariable ["TFAR_forceSpectator", true, true];
-        diag_log "Created tfar_relay_agent";
-    };
-    tfar_relay_agent setPosASL getPosASL activeCam;
-    player setVariable ["TFAR_spectatorEntity", tfar_relay_agent, true];
+    activeLight = [cameraBase] call createCamLight;
+    [cameraBase] call setupTfarRelay;
 
     // Настройка отображения камеры
     private _borderSize = 0.01;
@@ -589,6 +614,7 @@ switchSelectedMultiCamSlot = {
         private _rot = camRotationData select _camIndex;
         CAMERA_ROT_Z = _rot select 0;
         CAMERA_ROT_X = _rot select 1;
+        [multiCameraBase select selectedMultiCamIndex] call setupTfarRelay;
     };
 };
 
@@ -638,12 +664,7 @@ updateMultiCamSlot = {
         activeMultiCams set [_slotIndex, _newCam];
 
         // Добавляем новый источник света
-        private _light = "#lightpoint" createVehicleLocal getPosATL (multiCameraBase select _slotIndex);
-        _light setLightBrightness 5.0;
-        _light setLightAmbient [1, 1, 1];
-        _light setLightColor [1, 1, 1];
-        _light setLightAttenuation [0, 0, 0, 0.1];
-        _light attachTo [multiCameraBase select _slotIndex, [0, 0, 2]];
+        private _light = [multiCameraBase select _slotIndex] call createCamLight;
         activeMultiLights set [_slotIndex, _light];
         diag_log format ["Added enhanced light to multi-camera %1", _slotIndex];
     };
@@ -685,18 +706,8 @@ switchCam = {
         activeCam cameraEffect ["INTERNAL", "BACK", "CameraFeed"];
         "CameraFeed" setPiPEffect [0]; // ПНВ выключено по умолчанию
 
-        // Добавляем более мощный источник света
-        activeLight = "#lightpoint" createVehicleLocal getPosATL cameraBase;
-        activeLight setLightBrightness 5.0;
-        activeLight setLightAmbient [1, 1, 1];
-        activeLight setLightColor [1, 1, 1];
-        activeLight setLightAttenuation [0, 0, 0, 0.1];
-        activeLight attachTo [cameraBase, [0, 0, 2]];
-        diag_log "Added enhanced light to camera";
-
-        if (!isNull tfar_relay_agent) then {
-            tfar_relay_agent setPosASL getPosASL activeCam;
-        };
+        activeLight = [cameraBase] call createCamLight;
+        [cameraBase] call setupTfarRelay;
 
         private _disp = findDisplay 5001;
         if (!isNull _disp) then {
@@ -788,7 +799,7 @@ disconnectCam = {
         if (!isNull activeLight) then { deleteVehicle activeLight; };
     };
     
-    player setVariable ["TFAR_spectatorEntity", objNull, true];
+    call stopTfarRelay;
     closeDialog 0;
     diag_log "Disconnected from camera";
 };
@@ -964,14 +975,8 @@ toggleMultiCamMode = {
             activeCam camCommit 0;
         };
 
-        // Добавляем более мощный источник света
-        activeLight = "#lightpoint" createVehicleLocal getPosATL cameraBase;
-        activeLight setLightBrightness 5.0;
-        activeLight setLightAmbient [1, 1, 1];
-        activeLight setLightColor [1, 1, 1];
-        activeLight setLightAttenuation [0, 0, 0, 0.1];
-        activeLight attachTo [cameraBase, [0, 0, 2]];
-        diag_log "Added enhanced light to camera";
+        activeLight = [cameraBase] call createCamLight;
+        [cameraBase] call setupTfarRelay;
         
         [currentCamIndex] call applyCameraRotation;
         
@@ -1044,7 +1049,8 @@ toggleMultiCamMode = {
         cameraBase = objNull;
         
         call setupMultiCamMode;
-        
+        [multiCameraBase select selectedMultiCamIndex] call setupTfarRelay;
+
         multiCamMode = true;
         selectedMultiCamIndex = 0;
         
@@ -1144,13 +1150,7 @@ setupMultiCamMode = {
         format ["MultiCamFeed_%1", _i] setPiPEffect [0]; // ПНВ выключено по умолчанию
         activeMultiCams pushBack _cam;
 
-        // Добавляем более мощный источник света
-        private _light = "#lightpoint" createVehicleLocal getPosATL _base;
-        _light setLightBrightness 5.0;
-        _light setLightAmbient [1, 1, 1];
-        _light setLightColor [1, 1, 1];
-        _light setLightAttenuation [0, 0, 0, 0.1];
-        _light attachTo [_base, [0, 0, 2]];
+        private _light = [_base] call createCamLight;
         activeMultiLights set [_i, _light];
         diag_log format ["Added enhanced light to multi-camera %1", _i];
         
