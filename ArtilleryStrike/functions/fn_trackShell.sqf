@@ -1,10 +1,17 @@
-params["_shell","_time"];
-if(isNull _shell)exitWith{};
-private _disp=missionNamespace getVariable["art_terminalDisp",displayNull];
-if(isNull _disp)exitWith{};
-private _txt=_disp displayCtrl 103;
-private _mrk=createMarkerLocal[format["art_%1",diag_tickTime],getPosWorld _shell];
-_mrk setMarkerShapeLocal "ICON";
-_mrk setMarkerTypeLocal "mil_dot";
-_mrk setMarkerColorLocal "ColorRed";
-[{params["_pfh","_args"];params["_shell","_mrk","_time","_txt"]=_args;if(isNull _shell)exitWith{deleteMarkerLocal _mrk;_txt ctrlSetText "";[_pfh] call CBA_fnc_removePerFrameHandler};_mrk setMarkerPosLocal getPosWorld _shell;private _t=_time-time;if(_t<0)then{_t=0};_txt ctrlSetText format["%1",_t toFixed 1];if(_t<=0)exitWith{deleteMarkerLocal _mrk;[_pfh] call CBA_fnc_removePerFrameHandler};},0,[_shell,_mrk,_time,_txt]] call CBA_fnc_addPerFrameHandler;
+params ["_shell", "_targetPos", "_markerName"];
+if (isNull _shell) exitWith {};
+
+private _marker = _markerName;
+if !(getMarkerType _marker isEqualTo "") then {
+    deleteMarker _marker;
+}
+_marker = createMarker [_markerName, getPosASL _shell];
+_marker setMarkerType "mil_dot";
+
+while { alive _shell } do {
+    _marker setMarkerPos (getPosASL _shell);
+    private _dist = _shell distance _targetPos;
+    private _speed = vectorMagnitude (velocity _shell) max 0.1;
+    uiSleep 0.2;
+};
+deleteMarker _marker;
