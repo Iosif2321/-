@@ -1,21 +1,15 @@
-disableSerialization;
-private _disp = findDisplay 46 createDisplay "RscDisplayEmpty";
-missionNamespace setVariable ["art_terminalDisp",_disp];
-private _map = _disp ctrlCreate ["RscMapControl",100];
-_map ctrlSetPosition [0,0,1,0.8];
-_map ctrlCommit 0;
-private _combo = _disp ctrlCreate ["RscCombo",101];
-_combo ctrlSetPosition [0.35,0.81,0.3,0.05];
-{_combo lbAdd _x} forEach art_ammoList;
-_combo ctrlCommit 0;
-_disp setVariable ["targetPos",[0,0,0]];
-_map ctrlAddEventHandler ["MouseButtonClick",{params["_ctrl","","_x","_y"];_pos=_ctrl ctrlMapScreenToWorld [_x,_y];(_ctrl ctrlParent) setVariable ["targetPos",_pos];}];
-private _btn = _disp ctrlCreate ["RscButton",102];
-_btn ctrlSetPosition [0.35,0.87,0.3,0.05];
-_btn ctrlSetText "Fire";
-_btn ctrlCommit 0;
-_btn ctrlAddEventHandler ["ButtonClick",{params["_ctrl"];_disp=ctrlParent _ctrl;_pos=_disp getVariable ["targetPos",[0,0,0]];_ammo=art_ammoList select lbCurSel (_disp displayCtrl 101);[_pos,_ammo,art_dispersion,player] remoteExec ["art_fnc_fireShell",2];}];
+if !(createDialog "MyTerminalDialog") exitWith {};
 
-private _txt = _disp ctrlCreate ["RscText",103];
-_txt ctrlSetPosition [0.35,0.93,0.3,0.05];
-_txt ctrlCommit 0;
+disableSerialization;
+private _display = findDisplay 123456;
+if (isNull _display) exitWith {};
+
+{
+    _display displayRemoveAllEventHandlers _x;
+} forEach ["Unload","KeyDown"];
+
+_display displayAddEventHandler ["Unload", {
+    {
+        (_this select 0) displayRemoveAllEventHandlers _x;
+    } forEach ["KeyDown"];
+}];
