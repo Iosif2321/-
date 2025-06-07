@@ -1,8 +1,12 @@
-params["_cond"];
-private _cfg=configFile>>"CfgAmmo";
-private _arr=[];
+params ["_container"];
+if (isNil "_container" || {isNull _container}) exitWith {[]};
+
+private _ammoTypes = [];
 {
-private _c=_x;
-if(getText(_c>>"simulation") in ["shotShell","shotBomb"]&&{_c call _cond})then{_arr pushBack configName _c};
-}forEach configProperties[_cfg,"isClass _x"];
-_arr
+    private _ammo = getMagazineAmmoCargo _x;
+    if !(_ammoTypes findIf { _x isEqualTo _ammo } > -1) then {
+        _ammoTypes pushBack _ammo;
+    };
+} forEach (magazinesAmmoCargo _container);
+
+_ammoTypes
