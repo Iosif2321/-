@@ -1,12 +1,10 @@
-params["_target","_ammo","_disp","_unit"];
-private _start=[0,0,100];
-private _dist=_start distance _target;
-private _offset=[(random 2-1)*_dist*_disp,(random 2-1)*_dist*_disp,0];
-private _end=_target vectorAdd _offset;
-private _dir=vectorNormalized (_end vectorDiff _start);
-private _vel=_dir vectorMultiply 500;
-private _shell=_ammo createVehicle _start;
-_shell setVectorDirAndUp [_dir,[0,0,1]];
-_shell setVelocity _vel;
-private _time=time+(_start distance _end)/500;
-[_shell,_time] remoteExec["art_fnc_trackShell",_unit];
+params ["_pos", "_dir", "_shellType", "_velocity"];
+if (isNil "_pos" || isNil "_dir" || isNil "_shellType" || { _shellType isEqualTo "" } || isNil "_velocity") exitWith {};
+if !(isClass (configFile >> "CfgAmmo" >> _shellType)) exitWith {};
+
+private _shell = _shellType createVehicle _pos;
+if (isNull _shell) exitWith {};
+
+_shell setPosASL _pos;
+_shell setVectorDirAndUp [_dir, [0,0,1]];
+_shell setVelocity (_dir vectorMultiply _velocity);
