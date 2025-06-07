@@ -1,4 +1,13 @@
-params["_terminal"];
-if(isNull _terminal)exitWith{};
-if(!hasInterface)exitWith{[_terminal] remoteExecCall["art_fnc_addTerminalAction",0,true]};
-[_terminal,0,["ACE_MainActions"],{"Артудар"},{[_terminal] call art_fnc_openTerminal},{true}] call ace_interact_menu_fnc_addActionToObject;
+params ["_object", "_actionIdVar"];
+
+if (isNil "_object" || {isNull _object}) exitWith {};
+if (!isNil {_object getVariable ["terminalActionAdded", false]}) exitWith {};
+
+private _actionId = _object addAction ["Открыть терминал", {
+    _this spawn fnc_openTerminal;
+}, nil, 1.5, false, true, "", "alive _target"];
+
+_object setVariable ["terminalActionAdded", true, true];
+if (!isNil "_actionIdVar") then {
+    _object setVariable [_actionIdVar, _actionId, true];
+};
